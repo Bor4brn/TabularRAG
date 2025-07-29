@@ -1,6 +1,6 @@
 # Excel Dosya Analiz Sistemi - RAG Tabanlı
 
-Bu proje, Excel dosyalarındaki verileri anlamsal arama (semantic search) yöntemi ile analiz eden bir RAG (Retrieval-Augmented Generation) sistemidir. Türkçe dil desteği ile kullanıcıların doğal dil sorularına yanıt verir.
+Bu proje, Excel dosyalarındaki verileri analiz eden bir RAG (Retrieval-Augmented Generation) sistemidir. Türkçe dil desteği ile kullanıcıların doğal dil sorularına yanıt verir.
 
 ## 🚀 Özellikler
 
@@ -61,29 +61,11 @@ DATABASE_URL=postgresql://username:password@localhost:5432/excel_analyzer
 - `Device Dataset.xlsx` dosyasını proje kök dizinine yerleştirin
 - Veya `EXCEL_FILE_PATH` değişkenini güncelleyin
 
-## 📊 Desteklenen Excel Formatı
-
-Sistem aşağıdaki sütunları destekler:
-- Mayıs/Haziran Cihazı Marka & Model
-- Cihaz Kullanım Süreleri
-- 4G/5G Destek Bilgileri
-- 5G Abonelik Durumu
-- Fatura Bilgileri (Şehir, Yöntem, Ortalama)
-- Türkcell Tenür Bilgisi
-
 ## 🚀 Kullanım
 
 ### Sistemi Başlatma
 ```bash
 python main.py
-```
-
-### Örnek Sorular
-```
-"İstanbul'daki iPhone kullanıcılarının fatura ortalamaları nasıl?"
-"5G destekli cihaz kullanan müşteriler hangi şehirlerde yoğun?"
-"Samsung Galaxy kullanan müşterilerin tenür dağılımı nasıl?"
-"Ankara'da en çok kullanılan cihaz markaları neler?"
 ```
 
 ## 🏗️ Sistem Mimarisi
@@ -146,23 +128,9 @@ Invalid API key
 ```
 **Çözüm**: `.env` dosyasında API anahtarını kontrol edin.
 
-## 📝 Lisans
-
-MIT License - Detaylar için `LICENSE` dosyasına bakın.
-
-## 🤝 Katkıda Bulunma
-
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit yapın (`git commit -m 'Add amazing feature'`)
-4. Push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
-
 ## 📞 İletişim
 
 - GitHub: [@Bor4brn](https://github.com/Bor4brn)
 - Proje Linki: [https://github.com/Bor4brn/Excel-File-Analyzer-via-RAG](https://github.com/Bor4brn/Excel-File-Analyzer-via-RAG)
 
 ---
-
-**Not**: Bu sistem embedding tabanlı olarak çalışır ve tüm sorular semantik arama ile yanıtlanır. Pandas kod üretimi devre dışı bırakılmıştır.
