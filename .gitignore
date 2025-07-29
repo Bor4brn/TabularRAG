@@ -1,0 +1,98 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# Database
+*.db
+*.sqlite3
+
+# Excel files - Contains sensitive data
+Device Dataset.xlsx
+*.xlsx
+*.xls
+
+# Document files - May contain sensitive info
+knowledge_base.docx
+*.docx
+
+# API Keys and Secrets
+secrets.json
+config.json
+*.key
+*.pem
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+debug.log
+error.log
+
+# Database dumps and backups
+*.sql
+*.dump
+backup/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model cache
+.cache/
+models/
+
+# pgvector related
+*.vector
+
+# Personal notes and sensitive documents
+notes.txt
+todo.txt
+credentials/
+private/
+
+# System files
+Thumbs.db
+desktop.ini
