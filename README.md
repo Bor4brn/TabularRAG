@@ -1,200 +1,168 @@
-# TabularRAG Excel - Türkçe Veri Analizi Chatbot'u
+# Excel Dosya Analiz Sistemi - RAG Tabanlı
 
-Bu proje, Excel dosyalarını analiz edebilen akıllı bir Türkçe chatbot sistemidir. RAG (Retrieval-Augmented Generation) mimarisi kullanarak hem yapısal veri sorguları hem de semantik arama yapabilir.
+Bu proje, Excel dosyalarındaki verileri anlamsal arama (semantic search) yöntemi ile analiz eden bir RAG (Retrieval-Augmented Generation) sistemidir. Türkçe dil desteği ile kullanıcıların doğal dil sorularına yanıt verir.
 
 ## 🚀 Özellikler
 
-- **İkili Analiz Yaklaşımı**: 
-  - Yapısal sorgular için Text-to-Pandas dönüşümü
-  - Semantik sorgular için embedding tabanlı arama
-- **Türkçe Dil Desteği**: Türkçe sorular anlayabilir ve Türkçe cevaplar üretir
-- **Yerel Embedding Modeli**: `intfloat/multilingual-e5-base` modeli ile çevrimdışı çalışma
-- **PostgreSQL + pgvector**: Vektör veritabanı desteği
-- **Google Gemini AI**: Doğal dil işleme ve kod üretimi
-- **Otomatik Niyet Tespiti**: Soruları otomatik olarak kategorize eder
+- **Anlamsal Arama**: Excel verilerini embedding vektörleri ile analiz eder
+- **Türkçe Dil Desteği**: Türkçe sorular ve yanıtlar
+- **Yerel Embedding**: İnternet bağlantısı gerektirmeden çalışır
+- **PostgreSQL + pgvector**: Hızlı vektör araması
+- **Google Gemini Entegrasyonu**: Akıllı yanıt üretimi
+- **Otomatik Veri İşleme**: Excel satırlarını doğal dil cümlelerine dönüştürür
 
 ## 📋 Gereksinimler
 
 ### Sistem Gereksinimleri
 - Python 3.8+
-- PostgreSQL veritabanı
-- pgvector uzantısı yüklü PostgreSQL
+- PostgreSQL 12+ (pgvector uzantısı ile)
+- RAM: En az 4GB (embedding modeli için)
 
 ### Python Kütüphaneleri
-```bash
-pip install pandas openpyxl sqlalchemy psycopg2-binary pgvector
-pip install sentence-transformers google-generativeai python-dotenv
-pip install python-docx numpy warnings
-```
-
-## ⚙️ Kurulum
-
-1. **Projeyi klonlayın**:
-```bash
-git clone <repository-url>
-cd TabularRAG_Excel
-```
-
-2. **Sanal ortam oluşturun**:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# veya
-.venv\Scripts\activate  # Windows
-```
-
-3. **Gerekli paketleri yükleyin**:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **PostgreSQL veritabanı kurulumu**:
+## 🛠️ Kurulum
+
+### 1. Depoyu Klonlayın
+```bash
+git clone https://github.com/Bor4brn/Excel-File-Analyzer-via-RAG.git
+cd Excel-File-Analyzer-via-RAG
+```
+
+### 2. PostgreSQL + pgvector Kurulumu
+```bash
+# PostgreSQL kurulumu (macOS)
+brew install postgresql
+
+# pgvector uzantısını ekleyin
+git clone https://github.com/pgvector/pgvector.git
+cd pgvector
+make
+make install
+```
+
+### 3. Veritabanı Oluşturma
 ```sql
--- PostgreSQL'de pgvector uzantısını etkinleştirin
+CREATE DATABASE excel_analyzer;
+\c excel_analyzer;
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-5. **Ortam değişkenlerini ayarlayın**:
-`.env` dosyası oluşturup aşağıdaki bilgileri ekleyin:
+### 4. Ortam Değişkenlerini Ayarlayın
+`.env` dosyası oluşturun:
 ```env
-GEMINI_KEY=your_google_gemini_api_key
-DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+GEMINI_KEY=your_google_gemini_api_key_here
+DATABASE_URL=postgresql://username:password@localhost:5432/excel_analyzer
 ```
 
-6. **Excel dosyanızı projeye ekleyin**:
-- `Device Dataset.xlsx` dosyasını proje klasöründe bulundurun
-- Veya `main.py` dosyasında `EXCEL_FILE_PATH` değişkenini güncelleyin
+### 5. Excel Dosyasını Hazırlayın
+- `Device Dataset.xlsx` dosyasını proje kök dizinine yerleştirin
+- Veya `EXCEL_FILE_PATH` değişkenini güncelleyin
 
-## 🎯 Kullanım
+## 📊 Desteklenen Excel Formatı
 
-### Temel Kullanım
+Sistem aşağıdaki sütunları destekler:
+- Mayıs/Haziran Cihazı Marka & Model
+- Cihaz Kullanım Süreleri
+- 4G/5G Destek Bilgileri
+- 5G Abonelik Durumu
+- Fatura Bilgileri (Şehir, Yöntem, Ortalama)
+- Türkcell Tenür Bilgisi
+
+## 🚀 Kullanım
+
+### Sistemi Başlatma
 ```bash
 python main.py
 ```
 
-Program başladıktan sonra çeşitli sorular sorabilirsiniz:
-
 ### Örnek Sorular
-
-**Yapısal Veri Sorguları** (Pandas ile işlenir):
 ```
-5G aboneliği olan müşterilerin ortalama faturası nedir?
-Şehirlere göre müşteri sayılarını göster
-En çok kullanılan cihaz markası hangisi?
-```
-
-**Semantik Sorular** (Embedding ile aranır):
-```
-Apple cihaz kullanan müşteriler hakkında bilgi ver
-İzmir'deki müşterilerin durumu nasıl?
-5G destekli cihazlar hakkında ne öğrenebilirim?
+"İstanbul'daki iPhone kullanıcılarının fatura ortalamaları nasıl?"
+"5G destekli cihaz kullanan müşteriler hangi şehirlerde yoğun?"
+"Samsung Galaxy kullanan müşterilerin tenür dağılımı nasıl?"
+"Ankara'da en çok kullanılan cihaz markaları neler?"
 ```
 
 ## 🏗️ Sistem Mimarisi
 
-### 1. Niyet Tespiti
-- `QUERY_DATASET`: Yapısal veri sorguları
-- `QUERY_DOCUMENT`: Semantik arama gerektiren sorular
-- `GREETING`: Karşılama mesajları
-- `GOODBYE`: Veda mesajları
-- `UNSUPPORTED`: Desteklenmeyen sorular
+### 1. Veri İşleme
+- Excel satırları doğal Türkçe cümlelere dönüştürülür
+- Her satır için semantic embedding oluşturulur
+- Vektörler PostgreSQL'de saklanır
 
-### 2. Veri İşleme Akışı
+### 2. Sorgulama
+- Kullanıcı sorusu embedding'e dönüştürülür
+- Cosine similarity ile en yakın veri satırları bulunur
+- Gemini LLM ile doğal dil yanıtı üretilir
 
-```mermaid
-graph TD
-    A[Kullanıcı Sorusu] --> B[Niyet Tespiti]
-    B --> C{Niyet Türü}
-    C -->|QUERY_DATASET| D[Text-to-Pandas]
-    C -->|QUERY_DOCUMENT| E[Semantic Search]
-    D --> F[Pandas Kodu Üretimi]
-    F --> G[Kod Çalıştırma]
-    G --> H[Sonuç Formatı]
-    E --> I[Embedding Arama]
-    I --> J[İlgili Veriler]
-    J --> H
-    H --> K[LLM ile Doğal Dil Yanıtı]
-```
-
-### 3. Embedding Sistemi
-- Excel'deki her satır doğal dil cümlesine dönüştürülür
-- Türkçe-uyumlu `multilingual-e5-base` modeli kullanılır
-- 768 boyutlu vektörler PostgreSQL'de saklanır
-- Cosine similarity ile benzerlik hesaplanır
-
-## 📊 Veri Formatı
-
-Sistem şu tür Excel sütunlarını destekler:
-- Cihaz bilgileri (Marka, Model)
-- Zaman bazlı veriler (Mayıs/Haziran karşılaştırması)
-- Müşteri bilgileri (Şehir, Tenür, Abonelik durumu)
-- Finansal veriler (Fatura ortalamaları)
-- Kategorik veriler (Ödeme yöntemi, Fatura yöntemi)
+### 3. Teknoloji Stack
+- **Embedding**: `intfloat/multilingual-e5-base`
+- **Vector DB**: PostgreSQL + pgvector
+- **LLM**: Google Gemini 1.5 Flash
+- **Backend**: Python + SQLAlchemy
 
 ## 🔧 Yapılandırma
 
 ### Embedding Modeli Değiştirme
 ```python
-# main.py dosyasında
-LOCAL_EMBEDDING_DIM = 768  # Model boyutuna göre ayarlayın
-embedding_model = SentenceTransformer('model-name')
+self.embedding_model = SentenceTransformer('başka-model-adı')
+LOCAL_EMBEDDING_DIM = yeni_vektör_boyutu
 ```
 
-### Batch Boyutu Ayarlama
+### Top-K Sonuç Sayısı
 ```python
-batch_size = 32  # Sistem performansına göre ayarlayın
+def query_semantic_data(self, query: str, top_k: int = 15):
 ```
 
-## 🐛 Hata Giderme
+## 📈 Performans
+
+- **İlk Çalıştırma**: 5-10 dakika (embedding oluşturma)
+- **Sonraki Sorular**: 1-3 saniye
+- **Bellek Kullanımı**: ~2GB (model + veri)
+- **Vektör Arama**: <100ms
+
+## 🐛 Sorun Giderme
 
 ### Yaygın Hatalar
 
-1. **Syntax Error**: Pandas kodu üretiminde hata
-   - Soruyu farklı şekilde ifade edin
-   - Daha basit terimler kullanın
+**1. Embedding Format Hatası**
+```
+TextEncodeInput must be Union[TextInputSequence, Tuple[InputSequence, InputSequence]]
+```
+**Çözüm**: Kod güncellenmiş durumda, tekrar çalıştırın.
 
-2. **Database Connection Error**: 
-   - PostgreSQL servisinin çalıştığını kontrol edin
-   - `.env` dosyasındaki veritabanı URL'ini kontrol edin
+**2. PostgreSQL Bağlantı Hatası**
+```
+connection to server failed
+```
+**Çözüm**: PostgreSQL servisinin çalıştığından emin olun.
 
-3. **Embedding Model Yüklenemedi**:
-   - İnternet bağlantınızı kontrol edin
-   - Disk alanının yeterli olduğundan emin olun
-
-4. **API Key Hatası**:
-   - Google Gemini API anahtarınızı kontrol edin
-   - API kotanızın dolmadığından emin olun
-
-## 📈 Performans İyileştirmeleri
-
-- **Batch Processing**: Embedding oluşturma için 32'lik gruplar halinde işlem
-- **Database Indexing**: pgvector için IVFFLAT index kullanımı
-- **Caching**: İşlenmiş satırlar tekrar işlenmez
-- **Memory Management**: Büyük veri setleri için parça parça işlem
-
-## 🤝 Katkıda Bulunma
-
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+**3. Gemini API Hatası**
+```
+Invalid API key
+```
+**Çözüm**: `.env` dosyasında API anahtarını kontrol edin.
 
 ## 📝 Lisans
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
+MIT License - Detaylar için `LICENSE` dosyasına bakın.
 
-## 🙏 Teşekkürler
+## 🤝 Katkıda Bulunma
 
-- **Sentence Transformers**: Embedding modeli
-- **Google Gemini**: LLM desteği
-- **pgvector**: PostgreSQL vektör desteği
-- **Pandas**: Veri manipülasyonu
+1. Fork edin
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'Add amazing feature'`)
+4. Push edin (`git push origin feature/amazing-feature`)
+5. Pull Request açın
 
-## 📧 İletişim
+## 📞 İletişim
 
-Herhangi bir sorunuz için issue açabilir veya email gönderebilirsiniz.
+- GitHub: [@Bor4brn](https://github.com/Bor4brn)
+- Proje Linki: [https://github.com/Bor4brn/Excel-File-Analyzer-via-RAG](https://github.com/Bor4brn/Excel-File-Analyzer-via-RAG)
 
 ---
 
-**Not**: İlk çalıştırmada embedding modeli indirilecek ve Excel verileri işlenecektir. Bu işlem biraz zaman alabilir.
+**Not**: Bu sistem embedding tabanlı olarak çalışır ve tüm sorular semantik arama ile yanıtlanır. Pandas kod üretimi devre dışı bırakılmıştır.

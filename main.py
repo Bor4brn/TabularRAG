@@ -54,24 +54,15 @@ EmbBase.metadata.create_all(engine)
 
 # --- YARDIMCI FONKSİYONLAR (Text-to-Pandas, detect_intent vb. aynı kalıyor) ---
 def detect_intent(user_message: str) -> str:
-    # ... (değişiklik yok)
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-    system_prompt = (
-        "You are an AI assistant that classifies user intent for a data analysis chatbot.\n"
-        "Classify the user's message into one of the following labels:\n\n"
-        "- QUERY_DATASET: The user asks a question that requires looking up specific, factual, structured data from the Excel dataset.\n"
-        "- QUERY_DOCUMENT: The user asks a general, explanatory, or conceptual question that is likely answered by the semantic content of the rows in the Excel file.\n"
-        "- GREETING: A simple greeting.\n"
-        "- GOODBYE: A closing statement.\n"
-        "- UNSUPPORTED: The user asks an off-topic question.\n\n"
-        "IMPORTANT: Respond ONLY with one label."
-    )
-    full_prompt = f"{system_prompt}\n\nUser Message: \"{user_message}\"\nLabel:"
-    try:
-        response = model.generate_content(full_prompt, generation_config=genai.types.GenerationConfig(temperature=0.0))
-        return response.text.strip().upper()
-    except Exception as e:
-        print(f"Hata (detect_intent): {e}")
+    """Tüm sorguları semantik aramaya yönlendir"""
+    user_lower = user_message.lower().strip()
+
+    if any(greeting in user_lower for greeting in ['merhaba', 'selam', 'hello', 'hi', 'hey']):
+        return "GREETING"
+    elif any(goodbye in user_lower for goodbye in ['hoşça kal', 'görüşürüz', 'bye', 'goodbye', 'exit', 'quit']):
+        return "GOODBYE"
+    else:
+        # Tüm veri sorularını semantik aramaya yönlendir - pandas kod üretimi devre dışı
         return "QUERY_DOCUMENT"
 
 
@@ -250,12 +241,28 @@ class LLMClient:
             return "İsteğinizi işlerken bir hata oluştu."
 
 
-# --- PROMPT ŞABLONLARI (Aynı kalıyor) ---
+# --- PROMPT ŞABLONLARI ---
 PROMPTS = {
     "GREETING": "Merhaba! Ben sizin veri analisti asistanınızım. Excel dosyanızdaki veriler hakkında neyi merak ediyorsunuz?",
     "GOODBYE": "Yardımcı olabildiğime sevindim. Başka bir sorunuz olursa buradayım. Hoşça kalın!",
     "UNSUPPORTED": "Üzgünüm, bu konu uzmanlık alanımın dışında. Yalnızca sağlanan verilerle ilgili soruları yanıtlayabilirim.",
-    "SUMMARIZE_DOCUMENT_RESULT": "You are a helpful data analyst assistant. Answer the user's question based on the provided context. The context consists of one or more rows from the dataset.\n\nContext (Data Rows):\n---\n{context}\n---\n\nUser's Question: \"{user_question}\"\n\nAnswer:",
+    "SUMMARIZE_DOCUMENT_RESULT": """Sen Türkçe konuşan bir veri analisti asistanısın. Kullanıcının sorusunu, verilen bağlam bilgileri doğrultusunda yanıtla. 
+
+Bağlam Bilgileri (Veri Satırları):
+---
+{context}
+---
+
+Kullanıcının Sorusu: "{user_question}"
+
+YANIT KURALLARI:
+- Türkçe yanıt ver
+- Sayısal değerleri açık şekilde belirt 
+- Şehir, marka, model gibi detayları dahil et
+- Mümkünse karşılaştırmalar ve örnekler ver
+- Eğer kesin bir yanıt veremiyorsan, mevcut verilerle ilgili genel bilgi paylaş
+
+Yanıtın:""",
     "SUMMARIZE_DATASET_RESULT": "You are a helpful data analyst assistant. Interpret the result of a data query (in JSON format) and present it to the user in a natural language format.\n\nData Query Result (JSON):\n---\n{data_result}\n---\n\nUser's Original Question: \"{user_question}\"\n\nAnswer:"
 }
 
@@ -370,11 +377,11 @@ class AnalystChatbot:
                 self.db_session.rollback()
 
     # --- DEĞİŞİKLİK: Bu fonksiyon artık yerel modeli kullanıyor ---
-    def query_semantic_data(self, query: str, top_k: int = 3) -> str:
-        """Yerel modelle vektör arama yapar - cosine similarity ile."""
+    def query_semantic_data(self, query: str, top_k: int = 10) -> str:
+        """Yerel modelle vektör arama yapar - daha fazla sonuç döndürür."""
         try:
             # Soruyu yerel modelle vektöre çevir
-            query_embedding = self.embedding_model.encode(query)
+            query_embedding = self.embedding_model.encode([query])[0].tolist()  # Liste formatına çevir
 
             # Cosine similarity için inner product kullan (normalize edilmiş vektörler için)
             results = self.db_session.query(DocumentEmbedding.text).order_by(

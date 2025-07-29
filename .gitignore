@@ -16,83 +16,77 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Virtual Environment
-.venv/
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+.env
+.venv
+env/
 venv/
 ENV/
-env/
+env.bak/
+venv.bak/
 
-# Environment Variables
-.env
-.env.local
-.env.production
-
-# Database
-*.db
-*.sqlite3
-
-# Excel files - Contains sensitive data
-Device Dataset.xlsx
-*.xlsx
-*.xls
-
-# Document files - May contain sensitive info
-knowledge_base.docx
-*.docx
-
-# API Keys and Secrets
-secrets.json
-config.json
-*.key
-*.pem
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# macOS
+# OS
 .DS_Store
-.AppleDouble
-.LSOverride
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+*.xlsx
+*.xls
+*.csv
+knowledge_base.docx
+sentence-transformers/
+transformers/
+torch/
+
+# Database
+*.db
+*.sqlite3
 
 # Logs
 *.log
-debug.log
-error.log
-
-# Database dumps and backups
-*.sql
-*.dump
-backup/
+logs/
 
 # Temporary files
 *.tmp
 *.temp
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Model cache
-.cache/
-models/
-
-# pgvector related
-*.vector
-
-# Personal notes and sensitive documents
-notes.txt
-todo.txt
-credentials/
-private/
-
-# System files
-Thumbs.db
-desktop.ini
