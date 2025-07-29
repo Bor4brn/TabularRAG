@@ -6,22 +6,15 @@ from dotenv import load_dotenv
 import pandas as pd
 import warnings
 import docx
-
-# --- Veritabanı ve Vektör için Gerekli Kütüphaneler ---
 from sqlalchemy import create_engine, text, inspect, Column, Integer, Text, func
 from sqlalchemy.orm import declarative_base, sessionmaker
 from pgvector.sqlalchemy import Vector
-
-# --- RAG ve LLM için Gerekli Kütüphaneler ---
 import google.generativeai as genai
-
-# --- YENİ: Yerel Embedding için Kütüphaneler ---
 from sentence_transformers import SentenceTransformer
 import numpy as np
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# --- Ortam Değişkenlerini Yükle ---
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -34,9 +27,7 @@ if not GEMINI_API_KEY or not DATABASE_URL:
 genai.configure(api_key=GEMINI_API_KEY)
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# --- DEĞİŞİKLİK: Türkçe-uyumlu model ve vektör boyutunu güncelle ---
-LOCAL_EMBEDDING_DIM = 768  # multilingual-e5-base modelinin vektör boyutu
+LOCAL_EMBEDDING_DIM = 768 
 
 EmbBase = declarative_base()
 
@@ -51,8 +42,6 @@ class DocumentEmbedding(EmbBase):
 
 EmbBase.metadata.create_all(engine)
 
-
-# --- YARDIMCI FONKSİYONLAR (Text-to-Pandas, detect_intent vb. aynı kalıyor) ---
 def detect_intent(user_message: str) -> str:
     """Tüm sorguları semantik aramaya yönlendir"""
     user_lower = user_message.lower().strip()
@@ -62,12 +51,10 @@ def detect_intent(user_message: str) -> str:
     elif any(goodbye in user_lower for goodbye in ['hoşça kal', 'görüşürüz', 'bye', 'goodbye', 'exit', 'quit']):
         return "GOODBYE"
     else:
-        # Tüm veri sorularını semantik aramaya yönlendir - pandas kod üretimi devre dışı
         return "QUERY_DOCUMENT"
 
 
 def get_dataframe_schema(df: pd.DataFrame, df_name: str = 'df') -> str:
-    # ... (değişiklik yok)
     schema_str = f"You are working with a pandas DataFrame named `{df_name}`.\n"
     schema_str += f"Columns and data types:\n{df.dtypes.to_string()}\n\n"
     schema_str += f"First 3 rows:\n{df.head(3).to_string()}\n"
@@ -93,11 +80,7 @@ def text_to_pandas(user_question: str, df_schema: str) -> str:
     try:
         response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(temperature=0.1))
         pandas_code = response.text.strip()
-
-        # Remove markdown formatting
         pandas_code = pandas_code.replace("```python", "").replace("```", "").strip()
-
-        # Remove any explanatory text before or after code
         lines = pandas_code.split('\n')
         code_lines = []
 
@@ -113,12 +96,9 @@ def text_to_pandas(user_question: str, df_schema: str) -> str:
                 code_lines.append(line)
 
         cleaned_code = '\n'.join(code_lines)
-
-        # If it's a complex multi-line operation, ensure it ends with result assignment
         if '\n' in cleaned_code:
             lines = cleaned_code.split('\n')
             if not any('result =' in line for line in lines):
-                # Add result assignment to last line if needed
                 last_line = lines[-1].strip()
                 if not last_line.startswith('result'):
                     lines[-1] = f"result = {last_line}"
@@ -136,10 +116,7 @@ def execute_pandas_code(pandas_code: str, df: pd.DataFrame) -> str:
         return json.dumps({"error": "Bu soruyu mevcut verilerle yanıtlayamıyorum."}, ensure_ascii=False)
 
     try:
-        # Temizlik işlemleri
         cleaned_code = pandas_code.strip()
-
-        # Gereksiz satırları kaldır
         lines = cleaned_code.split('\n')
         filtered_lines = []
 
@@ -160,20 +137,14 @@ def execute_pandas_code(pandas_code: str, df: pd.DataFrame) -> str:
         final_code = '\n'.join(filtered_lines)
         local_scope = {'df': df, 'pd': pd, 'np': np}
 
-        # Basit tek satırlık kod kontrolü
         if len(filtered_lines) == 1:
             single_line = filtered_lines[0]
-
-            # 'result =' ile başlıyorsa exec kullan
             if single_line.startswith('result ='):
                 exec(single_line, {"__builtins__": {}}, local_scope)
                 result = local_scope.get('result')
             else:
-                # Tek expression, eval kullan
                 result = eval(single_line, {"__builtins__": {}}, local_scope)
         else:
-            # Çok satırlı kod - exec kullan
-            # Son satırın result assignment olduğundan emin ol
             if not any('result =' in line for line in filtered_lines):
                 last_line = filtered_lines[-1]
                 if not last_line.startswith('result'):
@@ -183,12 +154,10 @@ def execute_pandas_code(pandas_code: str, df: pd.DataFrame) -> str:
             exec(final_code, {"__builtins__": {}}, local_scope)
             result = local_scope.get('result')
 
-        # Sonucu formatla
         if result is None:
             return json.dumps({"error": "Kod çalıştı ama sonuç None döndü."}, ensure_ascii=False)
 
         if isinstance(result, pd.DataFrame):
-            # DataFrame'i daha okunabilir formatta döndür
             if result.empty:
                 return json.dumps({"message": "Sorguya uygun veri bulunamadı."}, ensure_ascii=False)
 
@@ -200,7 +169,6 @@ def execute_pandas_code(pandas_code: str, df: pd.DataFrame) -> str:
             return json.dumps(result_data, indent=2, ensure_ascii=False, default=str)
 
         elif isinstance(result, pd.Series):
-            # Series'i dict formatında döndür
             if result.empty:
                 return json.dumps({"message": "Sorguya uygun veri bulunamadı."}, ensure_ascii=False)
 
@@ -210,7 +178,6 @@ def execute_pandas_code(pandas_code: str, df: pd.DataFrame) -> str:
             return json.dumps(series_data, indent=2, ensure_ascii=False, default=str)
 
         else:
-            # Diğer tipler (sayı, string, vb.)
             return json.dumps({"result": result}, indent=2, ensure_ascii=False, default=str)
 
     except SyntaxError as e:
@@ -225,7 +192,6 @@ def execute_pandas_code(pandas_code: str, df: pd.DataFrame) -> str:
 
 
 class LLMClient:
-    # ... (değişiklik yok)
     def __init__(self, model_name="gemini-1.5-flash-latest"):
         self.model_name = model_name
 
@@ -240,8 +206,6 @@ class LLMClient:
             print(f"Hata (LLMClient.chat): {e}")
             return "İsteğinizi işlerken bir hata oluştu."
 
-
-# --- PROMPT ŞABLONLARI ---
 PROMPTS = {
     "GREETING": "Merhaba! Ben sizin veri analisti asistanınızım. Excel dosyanızdaki veriler hakkında neyi merak ediyorsunuz?",
     "GOODBYE": "Yardımcı olabildiğime sevindim. Başka bir sorunuz olursa buradayım. Hoşça kalın!",
@@ -266,8 +230,6 @@ Yanıtın:""",
     "SUMMARIZE_DATASET_RESULT": "You are a helpful data analyst assistant. Interpret the result of a data query (in JSON format) and present it to the user in a natural language format.\n\nData Query Result (JSON):\n---\n{data_result}\n---\n\nUser's Original Question: \"{user_question}\"\n\nAnswer:"
 }
 
-
-# --- Ana Sohbet Yöneticisi Sınıfı ---
 class AnalystChatbot:
     def __init__(self, excel_path: str):
         self.llm = LLMClient()
@@ -279,15 +241,11 @@ class AnalystChatbot:
             print(f"'{excel_path}' başarıyla yüklendi. {len(self.dataframe)} satır bulundu.")
         except Exception as e:
             raise RuntimeError(f"Excel dosyası okunurken hata oluştu: {e}")
-
-        # --- DEĞİŞİKLİK: Türkçe-uyumlu embedding modelini yükle ---
         print("Türkçe-uyumlu embedding modeli yükleniyor (ilk çalıştırmada biraz zaman alabilir)...")
         self.embedding_model = SentenceTransformer('intfloat/multilingual-e5-base')
         print("Embedding modeli başarıyla yüklendi.")
 
         self._initialize_excel_embeddings()
-
-    # --- DEĞİŞİKLİK: İyileştirilmiş veri dönüşümü ---
     def _initialize_excel_embeddings(self):
         """Excel'deki her satırı yerel modelle vektörleştirir ve veritabanına kaydeder."""
 
@@ -295,21 +253,16 @@ class AnalystChatbot:
             """Excel satırını daha anlamlı Türkçe cümlelere dönüştürür."""
             parts = []
 
-            # Cihaz bilgileri
             if pd.notna(row.get('Mayıs Cihazı Marka')):
                 parts.append(f"Müşterinin mayıs ayında kullandığı cihaz {row['Mayıs Cihazı Marka']} {row.get('Mayıs Cihazı Model', '')}")
 
             if pd.notna(row.get('Haziran Cihazı Marka')):
                 parts.append(f"Haziran ayında kullandığı cihaz {row['Haziran Cihazı Marka']} {row.get('Haziran Cihazı Model', '')}")
-
-            # Kullanım süreleri - düzeltilmiş sütun isimleri
             if pd.notna(row.get('Cihazın Toplam Kullanım Süresi (Ay)')):
                 parts.append(f"Cihazın toplam kullanım süresi {row['Cihazın Toplam Kullanım Süresi (Ay)']} ay")
 
             if pd.notna(row.get('Müşterinin Cihazı Kullanma Süresi (Ay)')):
                 parts.append(f"Müşterinin cihazı kullanma süresi {row['Müşterinin Cihazı Kullanma Süresi (Ay)']} ay")
-
-            # Teknik özellikler
             if pd.notna(row.get('Haziran Cihazı 4G Desteği')):
                 support_4g = "var" if row['Haziran Cihazı 4G Desteği'] == 1 else "yok"
                 parts.append(f"Haziran cihazında 4G desteği {support_4g}")
@@ -321,8 +274,6 @@ class AnalystChatbot:
             if pd.notna(row.get('Müşterinin 5G Abonelik Durumu')):
                 subscription_5g = "var" if row['Müşterinin 5G Abonelik Durumu'] == 1 else "yok"
                 parts.append(f"Müşterinin 5G aboneliği {subscription_5g}")
-
-            # Fatura bilgileri - düzeltilmiş sütun isimleri
             if pd.notna(row.get('Turkcell Tenürü')):
                 parts.append(f"Türkcell tenürü {row['Turkcell Tenürü']} ay")
 
@@ -351,7 +302,7 @@ class AnalystChatbot:
 
         print(f"Toplam {len(chunks)} satır bulundu. {last_processed_chunk}. satırdan devam ediliyor...")
 
-        batch_size = 32  # CPU üzerinde çalışırken makul bir batch boyutu
+        batch_size = 32  
         chunks_to_process = chunks[last_processed_chunk:]
 
         for i in range(0, len(chunks_to_process), batch_size):
@@ -361,7 +312,6 @@ class AnalystChatbot:
             print(f"İşleniyor: satırlar {start_chunk_id}-{end_chunk_id} / {len(chunks)}")
 
             try:
-                # Tek seferde tüm grup için embedding al (API çağrısı yok!)
                 embedding_vectors = self.embedding_model.encode(batch_texts).tolist()
 
                 for j, embedding_vector in enumerate(embedding_vectors):
@@ -375,15 +325,10 @@ class AnalystChatbot:
             except Exception as e:
                 print(f"Hata (Batch {start_chunk_id}-{end_chunk_id}): {e}")
                 self.db_session.rollback()
-
-    # --- DEĞİŞİKLİK: Bu fonksiyon artık yerel modeli kullanıyor ---
     def query_semantic_data(self, query: str, top_k: int = 10) -> str:
         """Yerel modelle vektör arama yapar - daha fazla sonuç döndürür."""
         try:
-            # Soruyu yerel modelle vektöre çevir
-            query_embedding = self.embedding_model.encode([query])[0].tolist()  # Liste formatına çevir
-
-            # Cosine similarity için inner product kullan (normalize edilmiş vektörler için)
+            query_embedding = self.embedding_model.encode([query])[0].tolist() 
             results = self.db_session.query(DocumentEmbedding.text).order_by(
                 DocumentEmbedding.embedding.cosine_distance(query_embedding)
             ).limit(top_k).all()
@@ -394,7 +339,6 @@ class AnalystChatbot:
             return ""
 
     def process_user_request(self, user_question: str) -> str:
-        # Bu fonksiyonda değişiklik yok, aynı mantıkla çalışmaya devam ediyor.
         intent = detect_intent(user_question)
         print(f"Tespit Edilen Niyet: {intent}")
 
@@ -426,12 +370,10 @@ class AnalystChatbot:
         print("Veritabanı bağlantısı kapatıldı.")
 
 
-# --- Ana Çalıştırma Bloğu ---
 if __name__ == "__main__":
     print("Veri Analisti Asistanı başlatılıyor...")
     chatbot = None
     try:
-        # Artık doküman yolu vermiyoruz, her şey Excel'den geliyor
         chatbot = AnalystChatbot(excel_path=EXCEL_FILE_PATH)
         print("\n" + "=" * 50)
         print("Asistan hazır. Excel verileriniz hakkında yapısal veya anlamsal sorular sorabilirsiniz.")
