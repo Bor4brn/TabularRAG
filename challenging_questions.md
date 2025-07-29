@@ -1,108 +1,72 @@
-# Sistem İçin Zorlu Sorular
+# Modelin Zorlanabileceği Sorular
 
-Bu dosya, embedding tabanlı sistemin zorlanabileceği ama verilerde mevcut olan bilgileri içeren sorular listesini içerir.
+Bu sorular Excel dosyasındaki verilerle ilgili olmasına rağmen, karmaşık analizler gerektirdiği için model zorlanabilir:
 
-## 🔥 Karmaşık Analitik Sorular
+## 1. Karmaşık İstatistiksel Analiz
+**Soru**: "5G aboneliği olan müşterilerin son 6 aylık fatura ortalaması ile 5G aboneliği olmayan müşterilerin fatura ortalaması arasındaki farkın standart sapması nedir ve bu fark hangi şehirlerde en belirgin şekilde görülüyor?"
 
-### 1. Çok Kriterli Filtreleme
-```
-"5G destekli cihaz kullanan ancak 5G aboneliği olmayan, fatura ortalaması 500 TL'den yüksek olan İstanbul'daki müşterilerin tenür dağılımı nasıl?"
-```
+**Zorluk**: Bu soru çoklu gruplandırma, standart sapma hesaplaması ve şehir bazında karşılaştırma gerektiriyor.
 
-### 2. Zaman Bazlı Karşılaştırma  
-```
-"Mayıs ayından Haziran ayına cihaz markası değiştiren müşterilerin Türkcell tenürü ortalaması ile cihaz markası değiştirmeyen müşterilerin tenür ortalaması arasında anlamlı bir fark var mı? Bu farkı şehir bazında analiz et."
-```
+## 2. Çok Koşullu Filtreleme ve Oransal Analiz
+**Soru**: "5G destekli cihaz kullanan ancak 5G aboneliği olmayan müşterilerin fatura ortalamasını hesapla, ardından bunları şehirlere göre grupla ve her şehirde bu durumda olan müşteri sayısının toplam müşteri sayısına oranını yüzde olarak göster, sonuçları fatura ortalamasına göre azalan sırada sırala"
 
-### 3. Çapraz Tablo Analizi
-```
-"Her şehirdeki Apple, Samsung ve Xiaomi kullanıcılarının 5G abonelik oranlarını karşılaştır ve en yüksek 5G benimsenme oranına sahip marka-şehir kombinasyonlarını listele."
-```
+**Zorluk**: Çoklu koşul, gruplandırma, oransal hesaplama ve sıralama işlemlerini birlikte yapması gerekiyor.
 
-### 4. Korelasyon Analizi
-```
-"Cihaz kullanım süresi ile fatura ortalaması arasında korelasyon var mı? Bu korelasyonu marka bazında analiz et ve en güçlü korelasyona sahip markayı bul."
-```
+## 3. Zaman Bazlı Cihaz Değişikliği Analizi
+**Soru**: "Mayıs ayından Haziran ayına cihaz markası değiştiren müşterilerin Türkcell tenürü ortalaması ile cihaz markası değiştirmeyen müşterilerin tenür ortalaması arasında anlamlı bir fark var mı? Bu farkı şehir bazında analiz et."
 
-### 5. Segmentasyon Analizi
-```
-"Müşterileri tenür süresine göre 3 gruba ayır (0-50 ay, 51-100 ay, 100+ ay) ve her grubun cihaz tercihi, 5G kullanımı ve fatura ortalaması profilini çıkar."
-```
+**Zorluk**: İki farklı zaman aralığındaki cihaz bilgilerini karşılaştırma ve istatistiksel analiz gerektiriyor.
 
-### 6. Anomali Tespiti
-```
-"Fatura ortalaması şehir ortalamasının 2 katından fazla olan müşterileri tespit et ve bu müşterilerin ortak özelliklerini (cihaz, tenür, abonelik durumu) analiz et."
-```
+## 4. Çoklu Değişken Korelasyon Analizi
+**Soru**: "Müşterinin cihazı kullanma süresi, Türkcell tenürü ve son 6 aylık fatura ortalaması arasında nasıl bir korelasyon var? Bu korelasyonu 5G abonelik durumuna göre farklılaştır."
 
-### 7. Trend Analizi
-```
-"Hangi şehirlerde iPhone 13'ten iPhone 14/15/16 serisine geçiş oranı en yüksek ve bu geçişi yapan müşterilerin fatura değişimi nasıl?"
-```
+**Zorluk**: Korelasyon hesaplama ve gruplandırılmış korelasyon analizi gerektiriyor.
 
-### 8. Çoklu Bağımlılık Analizi
-```
-"5G aboneliği olan müşterilerin son 6 aylık fatura ortalaması ile 5G aboneliği olmayan müşterilerin fatura ortalaması arasındaki farkın standart sapması nedir ve bu fark hangi şehirlerde en belirgin şekilde görülüyor?"
-```
+## 5. Karmaşık Kategorik Analiz
+**Soru**: "Her şehirde, en popüler ödeme yöntemi ile en az popüler ödeme yöntemini kullanan müşterilerin fatura ortalamaları arasındaki fark nedir? Bu farkın en yüksek olduğu şehirleri listele."
 
-### 9. Coğrafi Dağılım Analizi
-```
-"Türkiye'nin doğu, batı, güney ve kuzey bölgelerinde cihaz markası tercihlerindeki farklılıkları analiz et ve her bölgede dominant olan markaların fatura ortalamalarını karşılaştır."
-```
+**Zorluk**: Kategorik verilerde popülerlik hesaplama, gruplandırma ve karşılaştırma işlemleri gerektiriyor.
 
-### 10. Davranışsal Segmentasyon
-```
-"Aynı cihazı 6 aydan uzun süre kullanan 'sadık kullanıcılar' ile sürekli cihaz değiştiren 'değişken kullanıcılar'ı tanımla ve bu iki grubun demografik ve finansal profillerini karşılaştır."
-```
+## 6. Nested Gruplama ve Yüzdelik Analiz
+**Soru**: "Fatura yöntemine göre gruplandır, her grup içinde 5G cihaz desteği olan müşterilerin yüzdesini hesapla, sonra bu yüzdelerin şehir bazında dağılımını göster ve en yüksek yüzdeye sahip şehir-fatura yöntemi kombinasyonunu bul."
 
-## 🎯 Neden Bu Sorular Zor?
+**Zorluk**: İç içe gruplandırma, yüzdelik hesaplama ve çoklu seviye analiz gerektiriyor.
 
-### 1. **Çoklu Filtreleme Gerektiriyor**
-- Aynı anda birden fazla kritere göre filtreleme
-- Mantıksal operatörler (VE, VEYA, DEĞİL)
+## 7. Temporal Pattern Analysis
+**Soru**: "Mayıs ayında Apple kullanan ama Haziran ayında Samsung'a geçen müşterilerin profil analizi: Bu müşterilerin ortalama tenürleri, fatura ortalamaları ve şehir dağılımları nasıl? Diğer marka değişikliklerinden farkı nedir?"
 
-### 2. **Matematiksel Hesaplamalar**
-- Standart sapma, korelasyon, yüzdelik hesaplar
-- Grup bazlı istatistikler
+**Zorluk**: Spesifik marka değişikliği paterni ve karşılaştırmalı analiz gerektiriyor.
 
-### 3. **Karşılaştırmalı Analiz**
-- Gruplar arası fark analizi
-- Zaman bazlı değişim tespiti
+## 8. Outlier Detection ve Analiz
+**Soru**: "Son 6 aylık fatura ortalaması açısından aykırı değerlere sahip müşterileri tespit et (Q1-1.5*IQR altında veya Q3+1.5*IQR üstünde). Bu aykırı müşterilerin cihaz kullanım süreleri, tenürleri ve 5G abonelik durumları normal müşterilerden nasıl farklılaşıyor?"
 
-### 4. **Coğrafi/Kategorik Gruplama**
-- Şehirleri bölgelere ayırma
-- Dinamik segmentasyon
+**Zorluk**: İstatistiksel aykırı değer tespiti ve karşılaştırmalı profil analizi gerektiriyor.
 
-### 5. **Anomali ve Trend Tespiti**
-- Aykırı değer tespiti
-- Değişim paternleri
+## 9. Temporal Multi-Device Analysis
+**Soru**: "Mayıs ayında iPhone 13 kullanan ama Haziran'da Galaxy S24 Ultra'ya geçen müşterilerin, cihaz değiştirdikleri tarihteki fatura artış oranları ile aynı dönemde Samsung'dan Apple'a geçen müşterilerin fatura değişim oranları arasında anlamlı bir korelasyon var mı? Bu korelasyonu şehir ve tenür seviyelerine göre segmentlere ayırarak analiz et."
 
-## 💡 Sistemin Bu Sorulara Yaklaşımı
+**Zorluk**: Çoklu temporal analiz, spesifik model geçişleri, korelasyon hesaplama ve çok boyutlu segmentasyon.
 
-Embedding tabanlı sistem bu soruları şu şekilde ele alır:
+## 10. Advanced Statistical Profiling
+**Soru**: "5G aboneliği olan müşterilerin fatura dağılımının çarpıklık (skewness) ve basıklık (kurtosis) değerlerini hesapla. Bu dağılımın normal dağılımdan ne kadar saptığını Shapiro-Wilk testi ile kontrol et. Ardından bu dağılım parametrelerini 5G aboneliği olmayan müşterilerle karşılaştırarak hangi şehirlerde en büyük istatistiksel farklar olduğunu tespit et."
 
-1. **Anahtar Kelime Eşleştirme**: "5G", "İstanbul", "iPhone" gibi terimleri arar
-2. **Benzer Veri Satırları**: En yakın semantik eşleşmeleri bulur  
-3. **Bağlamsal Analiz**: LLM ile genel bir analiz yapar
-4. **Sınırlı Matematik**: Kesin hesaplamalar yerine genel değerlendirme
+**Zorluk**: İleri düzey istatistiksel hesaplamalar, normallik testleri ve karşılaştırmalı dağılım analizi.
 
-## ⚠️ Beklenen Davranış
+## 11. Complex Nested Conditional Analysis
+**Soru**: "Turkcell tenürü 50+ ay olan müşteriler arasında, Mayıs'ta Apple kullanıp Haziran'da Android'e geçenlerle, her iki ayda da aynı markayı kullananları karşılaştır. Fakat sadece 5G destekli cihaz kullanan ve fatura ortalaması şehir ortalamasının üstünde olan müşterileri dahil et. Bu kriterlere uyan müşteri gruplarının cihaz kullanım süresi dağılımlarını box-plot analizi için gerekli Q1, Q3, median ve outlier değerleriyle birlikte sun."
 
-Bu zorlu sorularda sistem:
-- ✅ İlgili veri satırlarını bulabilir
-- ✅ Genel trendleri açıklayabilir
-- ✅ Örnek müşteri profillerini gösterebilir
-- ❌ Kesin matematik hesapları yapamayabilir
-- ❌ Karmaşık filtrelemeler tam olmayabilir
-- ❌ İstatistiksel analiz sınırlı olabilir
+**Zorluk**: Çoklu iç içe filtreleme, conditional logic, aggregation ve istatistiksel dağılım analizi.
 
-## 🔄 Test Senaryoları
+## 12. Cross-Dimensional Correlation Matrix
+**Soru**: "Müşteri davranış matrisi oluştur: Turkcell tenürü, cihaz kullanım süresi, fatura ortalaması, 5G abonelik durumu ve cihaz değiştirme sıklığı (Mayıs-Haziran arası) arasındaki korelasyon matrisini hesapla. Bu matriste 0.7'den yüksek korelasyona sahip değişken çiftlerini tespit et ve bu çiftlerin hangi şehirlerde en güçlü olduğunu belirle."
 
-Bu soruları sistemde test ederken:
+**Zorluk**: Korelasyon matrisi hesaplama, threshold filtering ve şehir bazında karşılaştırmalı analiz.
 
-1. **Kısmi Başarı Bekleyin**: Tam olmasa da ilgili bilgiler verecektir
-2. **Alternatif Soru Deneyin**: Aynı konuyu farklı şekilde sorabilirsiniz
-3. **Adım Adım Bölebilirsiniz**: Karmaşık soruları parçalara ayırın
+## Neden Bu Sorular Zor?
 
----
-
-Bu sorular, embedding tabanlı sistemin hem gücünü hem de sınırlarını test etmek için tasarlanmıştır.
+1. **Çoklu işlem gerektirme**: Filtreleme, gruplandırma, hesaplama ve sıralama işlemlerini birlikte yapma
+2. **Karmaşık pandas syntax**: İç içe fonksiyon çağrıları ve method chaining
+3. **İstatistiksel hesaplamalar**: Standart sapma, korelasyon, aykırı değer tespiti
+4. **Temporal analiz**: Farklı zaman periyodlarındaki verileri karşılaştırma
+5. **Çoklu koşullu filtreleme**: Birden fazla koşulu AND/OR ile birleştirme
+6. **Nested gruplandırma**: Bir grup içinde başka gruplandırma yapma
